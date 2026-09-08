@@ -1,0 +1,6 @@
+interface:
+  display_name: "Evolfy Board Sync"
+  short_description: "Atualize um Board enquanto o Codex trabalha"
+  default_prompt: "Conecte este projeto ao Board Evolfy e registre marcos operacionais seguros durante o trabalho."
+policy:
+  allow_implicit_invocation: true

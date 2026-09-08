@@ -1,0 +1,26 @@
+{
+  "name": "evolfy",
+  "owner": {
+    "name": "Evolfy",
+    "url": "https://evolfy.com.br"
+  },
+  "description": "Integrações oficiais para acompanhar projetos no Evolfy.",
+  "plugins": [
+    {
+      "name": "evolfy-board-sync",
+      "displayName": "Evolfy Board Sync",
+      "source": "./plugins/evolfy-board-sync",
+      "description": "Conecta uma sessão de desenvolvimento a um Board Evolfy com pareamento de uso único e feed operacional seguro.",
+      "version": "0.1.0",
+      "author": {
+        "name": "Evolfy",
+        "url": "https://evolfy.com.br"
+      },
+      "homepage": "https://github.com/pedronishida/evolfy-board-sync",
+      "repository": "https://github.com/pedronishida/evolfy-board-sync",
+      "license": "MIT",
+      "category": "productivity",
+      "tags": ["evolfy", "boards", "project-management", "mcp"]
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "name": "evolfy",
+  "interface": {
+    "displayName": "Evolfy",
+    "description": "Integrações oficiais para acompanhar projetos no Evolfy."
+  },
+  "plugins": [
+    {
+      "name": "evolfy-board-sync",
+      "source": {
+        "source": "local",
+        "path": "./plugins/evolfy-board-sync"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_USE"
+      },
+      "category": "productivity"
+    }
+  ]
+}

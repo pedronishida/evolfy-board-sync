@@ -1,0 +1,13 @@
+{
+  "name": "evolfy-board-sync",
+  "description": "Conecta uma sessão Claude Code a um Board Evolfy com pareamento de uso único e feed operacional seguro.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Evolfy",
+    "url": "https://evolfy.com.br"
+  },
+  "homepage": "https://github.com/pedronishida/evolfy-board-sync",
+  "repository": "https://github.com/pedronishida/evolfy-board-sync",
+  "license": "MIT",
+  "keywords": ["evolfy", "boards", "project-management", "mcp"]
+}

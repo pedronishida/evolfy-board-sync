@@ -1,0 +1,23 @@
+{
+  "name": "evolfy-board-sync",
+  "version": "0.1.0",
+  "description": "Conecta uma sessão de desenvolvimento a um Board Evolfy com pareamento de uso único e feed operacional seguro.",
+  "author": {
+    "name": "Evolfy",
+    "url": "https://evolfy.com.br"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Evolfy Board Sync",
+    "shortDescription": "Atualize um Board enquanto o Codex trabalha.",
+    "longDescription": "Pareie um projeto a um Board Evolfy sem compartilhar webhook ou chave permanente. O plugin envia somente resumos operacionais allowlisted e nunca publica automaticamente no portal do cliente.",
+    "developerName": "Evolfy",
+    "category": "Productivity",
+    "capabilities": ["MCP", "Project tracking"],
+    "websiteURL": "https://evolfy.com.br",
+    "defaultPrompt": [
+      "Use $evolfy-board-sync para conectar este projeto ao Board Evolfy e registrar marcos operacionais seguros."
+    ]
+  },
+  "mcpServers": "./.mcp.json"
+}

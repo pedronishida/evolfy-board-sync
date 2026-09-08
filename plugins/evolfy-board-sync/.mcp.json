@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "evolfy-board-sync": {
+      "command": "node",
+      "args": [
+        "-e",
+        "import('node:url').then(({pathToFileURL})=>import(pathToFileURL(`${process.env.CLAUDE_PLUGIN_ROOT||process.cwd()}/scripts/mcp-server.mjs`).href))"
+      ],
+      "cwd": ".",
+      "env_vars": []
+    }
+  }
+}

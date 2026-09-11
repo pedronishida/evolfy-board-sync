@@ -512,9 +512,16 @@ async function receive(message) {
     result(message.id, {
       protocolVersion: message.params?.protocolVersion ?? "2025-11-25",
       capabilities: { tools: { listChanged: false } },
-      serverInfo: { name: "evolfy-board-sync", version: "0.2.1" },
-      instructions:
-        "Conecte por código EVF e envie apenas resumos operacionais seguros. Nunca envie código, diff, arquivo, comando, output, e-mail, URL ou segredo. Crie e mova cards só nas colunas com agentAllowed=true; publicar para o cliente é sempre humano.",
+      serverInfo: { name: "evolfy-board-sync", version: "0.2.2" },
+      // Este texto vai para toda sessão; a skill só carrega quando o usuário
+      // cita o Board. Por isso o QUANDO criar e mover card mora aqui também —
+      // na 0.2.1 ele morava só na skill e as entregas passavam sem card.
+      instructions: [
+        "Conecte por código EVF e envie apenas resumos operacionais seguros. Nunca envie código, diff, arquivo, comando, output, e-mail, URL ou segredo.",
+        "Numa sessão de desenvolvimento, confira evolfy_connection_status (local, sem rede) antes da primeira entrega. Se o projeto estiver conectado, mantenha o Board alinhado sem esperar pedido: ao começar uma entrega, leia evolfy_get_board e crie ou reaproveite um card para ela numa coluna de desenvolvimento; quando os testes passarem, mova-o para a de testes; use o cardId dele em cada relatório.",
+        "Um card por entrega, nunca por commit ou tarefa interna. Registre progresso, testes, bloqueio e conclusão no momento em que acontecem, não em lote no fim.",
+        "Crie e mova cards só nas colunas com agentAllowed=true; publicar para o cliente é sempre humano. Sem as permissões de card, siga só com os relatórios.",
+      ].join(" "),
     });
     return;
   }

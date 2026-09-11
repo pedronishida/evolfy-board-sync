@@ -1,6 +1,6 @@
 ---
 name: evolfy-board-sync
-description: Conecta o projeto atual a um Board Evolfy por código de pareamento, registra progresso, testes, bloqueios e conclusão enquanto a sessão trabalha e, quando permitido, cria e move cards nas colunas liberadas. Use quando o usuário pedir para conectar, sincronizar, alimentar, organizar ou atualizar um Board Evolfy a partir do Codex ou Claude Code, ou fornecer um código EVF de conexão.
+description: Conecta o projeto atual a um Board Evolfy por código de pareamento, registra progresso, testes, bloqueios e conclusão enquanto a sessão trabalha e, quando permitido, cria e move cards nas colunas liberadas. Use quando o usuário pedir para conectar, sincronizar, alimentar, organizar ou atualizar um Board Evolfy a partir do Codex ou Claude Code, ou fornecer um código EVF de conexão. Use também, sem esperar pedido, quando o projeto já estiver conectado e a sessão começar, testar, bloquear ou concluir uma entrega.
 ---
 
 # Evolfy Board Sync
@@ -25,7 +25,10 @@ peça webhook, URL do Board, chave de API ou credencial da workspace.
 
 ## Atualizar durante o trabalho
 
-Registre marcos que uma pessoa acompanhando o projeto realmente precisa saber:
+Registre marcos que uma pessoa acompanhando o projeto realmente precisa saber,
+**no momento em que acontecem** — não em lote no fim da sessão. Quem acompanha
+pelo Board só vê o que você registrou; um relatório horas depois não serve a
+ninguém.
 
 - `evolfy_report_progress` depois de uma mudança funcional verificável;
 - `evolfy_report_tests` depois de executar testes, com contagem resumida;
@@ -56,8 +59,20 @@ separado.
 ## Organizar cards
 
 Quando o código de conexão incluiu as permissões **Criar cards** e **Mover
-cards**, o agente mantém o Board alinhado ao trabalho. As regras abaixo são
-garantidas pelo servidor; siga-as para não gastar chamadas com recusas.
+cards**, o agente mantém o Board alinhado ao trabalho **sem esperar pedido** —
+o usuário conectou o Board justamente para não ter de pedir. O ciclo de cada
+entrega:
+
+1. **Ao começar a implementar:** `evolfy_get_board`; reaproveite o card aberto
+   da entrega ou crie um na coluna de desenvolvimento. Crie no começo, não no
+   fim — um card que nasce pronto não mostra nada a quem acompanha.
+2. **Durante:** `evolfy_report_*` com o `cardId` dele, a cada marco.
+3. **Testes verdes:** mova para a coluna de testes internos.
+4. **Entrega concluída:** `evolfy_complete_work` com o `cardId`. Levar o card
+   além das colunas liberadas é das pessoas.
+
+As regras abaixo são garantidas pelo servidor; siga-as para não gastar chamadas
+com recusas.
 
 - Consulte `evolfy_get_board` antes. Crie e mova somente em colunas com
   `agentAllowed: true`. Coluna com `closesCards: true` e colunas não liberadas

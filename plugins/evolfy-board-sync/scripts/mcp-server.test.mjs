@@ -50,12 +50,12 @@ function chamada(id, name, args) {
   return { id, method: "tools/call", params: { name, arguments: args } };
 }
 
-test("anuncia a versão 0.2.1 e as ferramentas de card com os campos obrigatórios", async () => {
+test("anuncia a versão 0.2.2 e as ferramentas de card com os campos obrigatórios", async () => {
   const respostas = await conversar([
     { id: 1, method: "initialize", params: { protocolVersion: "2025-11-25" } },
     { id: 2, method: "tools/list" },
   ]);
-  assert.equal(respostas.get(1).result.serverInfo.version, "0.2.1");
+  assert.equal(respostas.get(1).result.serverInfo.version, "0.2.2");
   const tools = new Map(
     respostas.get(2).result.tools.map((tool) => [tool.name, tool]),
   );
@@ -74,6 +74,24 @@ test("anuncia a versão 0.2.1 e as ferramentas de card com os campos obrigatóri
     tools.get("evolfy_create_card").inputSchema.properties.title.maxLength,
     200,
   );
+});
+
+test("a instrução de toda sessão diz QUANDO criar e mover card, não só onde", async () => {
+  // A skill só carrega quando o usuário cita o Board. Na 0.2.1 o ciclo do card
+  // morava só nela, e uma sessão inteira de entregas passou sem card nenhum.
+  const respostas = await conversar([
+    { id: 1, method: "initialize", params: { protocolVersion: "2025-11-25" } },
+  ]);
+  const instrucoes = respostas.get(1).result.instructions;
+  assert.match(instrucoes, /evolfy_connection_status \(local, sem rede\)/);
+  assert.match(instrucoes, /sem esperar pedido/);
+  assert.match(instrucoes, /ao começar uma entrega/);
+  assert.match(instrucoes, /quando os testes passarem, mova-o/);
+  assert.match(instrucoes, /use o cardId dele em cada relatório/);
+  assert.match(instrucoes, /não em lote no fim/);
+  assert.match(instrucoes, /Nunca envie código, diff, arquivo, comando, output, e-mail, URL ou segredo/);
+  assert.match(instrucoes, /agentAllowed=true/);
+  assert.match(instrucoes, /publicar para o cliente é sempre humano/);
 });
 
 test("recusa entrada inválida antes de qualquer rede, com mensagem segura", async () => {

@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.2.2 — 2026-09-11
+
+- a instrução que o servidor entrega a toda sessão passa a dizer **quando**
+  criar e mover card — ao começar a entrega e quando os testes passam — e não
+  só onde. Na 0.2.1 esse ciclo morava só na skill, que carrega apenas quando o
+  usuário cita o Board: uma sessão inteira de entregas passou com o feed
+  preenchido e quase nenhum card;
+- a skill também passa a valer, sem pedido, para projeto já conectado que
+  começa, testa, bloqueia ou conclui uma entrega, e pede os relatórios no
+  momento em que acontecem, não em lote no fim.
+
 ## 0.2.1 — 2026-09-10
 
 - quando a rede falha e a repetição devolve o card que a própria chamada

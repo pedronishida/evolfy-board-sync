@@ -50,12 +50,12 @@ function chamada(id, name, args) {
   return { id, method: "tools/call", params: { name, arguments: args } };
 }
 
-test("anuncia a versão 0.2.0 e as ferramentas de card com os campos obrigatórios", async () => {
+test("anuncia a versão 0.2.1 e as ferramentas de card com os campos obrigatórios", async () => {
   const respostas = await conversar([
     { id: 1, method: "initialize", params: { protocolVersion: "2025-11-25" } },
     { id: 2, method: "tools/list" },
   ]);
-  assert.equal(respostas.get(1).result.serverInfo.version, "0.2.0");
+  assert.equal(respostas.get(1).result.serverInfo.version, "0.2.1");
   const tools = new Map(
     respostas.get(2).result.tools.map((tool) => [tool.name, tool]),
   );

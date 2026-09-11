@@ -390,8 +390,10 @@ async function callTool(name, args) {
       colunaId: columnId,
       titulo: title,
     });
+    // A chave é por chamada: um replay só acontece quando a própria chamada
+    // repetiu o pedido depois de falha de rede — o card nasceu desta chamada.
     return {
-      created: result?.existing !== true && result?.event?.replayed !== true,
+      created: result?.existing !== true,
       reusedExisting: result?.existing === true,
       card: result?.card ?? null,
       publishedToClient: false,
@@ -510,7 +512,7 @@ async function receive(message) {
     result(message.id, {
       protocolVersion: message.params?.protocolVersion ?? "2025-11-25",
       capabilities: { tools: { listChanged: false } },
-      serverInfo: { name: "evolfy-board-sync", version: "0.2.0" },
+      serverInfo: { name: "evolfy-board-sync", version: "0.2.1" },
       instructions:
         "Conecte por código EVF e envie apenas resumos operacionais seguros. Nunca envie código, diff, arquivo, comando, output, e-mail, URL ou segredo. Crie e mova cards só nas colunas com agentAllowed=true; publicar para o cliente é sempre humano.",
     });

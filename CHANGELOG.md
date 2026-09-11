@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.1 — 2026-09-10
+
+- quando a rede falha e a repetição devolve o card que a própria chamada
+  criou, o resultado passa a dizer `created: true`;
+- a skill explica o que fazer com um card reaproveitado que está em coluna
+  não liberada ou publicado para o cliente.
+
 ## 0.2.0 — 2026-09-10
 
 - `evolfy_create_card` e `evolfy_move_card`, disponíveis quando o código de

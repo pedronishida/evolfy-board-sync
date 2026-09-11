@@ -75,7 +75,8 @@ garantidas pelo servidor; siga-as para não gastar chamadas com recusas.
 - Card com `publishedToClient: true` ou concluído fica com pessoas. Não tente
   movê-lo.
 - Depois de criar um card, use o `cardId` dele nos `evolfy_report_*` daquela
-  entrega.
+  entrega. Se a criação devolver `reusedExisting: true` com um card em coluna não
+  liberada ou publicado, use esse `cardId` só nos relatórios e não tente movê-lo.
 
 Como reagir às recusas:
 

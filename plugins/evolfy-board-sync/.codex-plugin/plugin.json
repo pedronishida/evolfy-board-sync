@@ -1,6 +1,6 @@
 {
   "name": "evolfy-board-sync",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Conecta uma sessão de desenvolvimento a um Board Evolfy com pareamento de uso único e feed operacional seguro.",
   "author": {
     "name": "Evolfy",

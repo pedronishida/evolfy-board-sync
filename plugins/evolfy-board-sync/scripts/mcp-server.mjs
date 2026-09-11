@@ -45,8 +45,65 @@ const tools = [
   {
     name: "evolfy_get_board",
     description:
-      "Lê somente nome, colunas e títulos/IDs dos cards do Board conectado para associar atualizações sem inventar IDs.",
+      "Lê somente nome, colunas e títulos/IDs dos cards do Board conectado para associar atualizações sem inventar IDs. Cada coluna diz se está liberada para o agente (agentAllowed) e se conclui cards (closesCards); cada card diz se está publicado para o cliente (publishedToClient).",
     inputSchema: rootSchema(),
+  },
+  {
+    name: "evolfy_create_card",
+    description:
+      "Cria um card numa coluna liberada para o agente. Se já existir card aberto com o mesmo título, devolve esse card em vez de duplicar. Exige a permissão Criar cards no código de conexão.",
+    inputSchema: {
+      type: "object",
+      additionalProperties: false,
+      required: ["projectRoot", "title", "columnId"],
+      properties: {
+        projectRoot: {
+          type: "string",
+          description: "Raiz absoluta do projeto local.",
+        },
+        title: {
+          type: "string",
+          minLength: 1,
+          maxLength: 200,
+          description:
+            "Título curto da entrega, em linguagem de produto. Sem código, caminho, comando, URL, e-mail ou segredo.",
+        },
+        columnId: {
+          type: "string",
+          format: "uuid",
+          description:
+            "ID de uma coluna com agentAllowed=true em evolfy_get_board.",
+        },
+      },
+    },
+  },
+  {
+    name: "evolfy_move_card",
+    description:
+      "Move um card entre colunas liberadas. Informe a coluna em que o card está agora: se alguém já o moveu, a Evolfy recusa e nada muda. Card publicado para o cliente ou concluído fica com pessoas. Exige a permissão Mover cards.",
+    inputSchema: {
+      type: "object",
+      additionalProperties: false,
+      required: ["projectRoot", "cardId", "fromColumnId", "toColumnId"],
+      properties: {
+        projectRoot: {
+          type: "string",
+          description: "Raiz absoluta do projeto local.",
+        },
+        cardId: { type: "string", format: "uuid" },
+        fromColumnId: {
+          type: "string",
+          format: "uuid",
+          description:
+            "Coluna em que o card está agora, segundo evolfy_get_board.",
+        },
+        toColumnId: {
+          type: "string",
+          format: "uuid",
+          description: "Coluna de destino, com agentAllowed=true.",
+        },
+      },
+    },
   },
   eventTool(
     "evolfy_report_progress",
@@ -200,6 +257,49 @@ async function report(projectRoot, summary, cardId, type, status) {
   };
 }
 
+const UUID =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function requireUuid(value, message) {
+  if (typeof value !== "string" || !UUID.test(value)) {
+    throw new SafeError(message);
+  }
+  return value.toLowerCase();
+}
+
+/**
+ * Escrita de card com uma chave por chamada. Se a rede falhar ou o tempo
+ * esgotar, a Evolfy pode ter gravado mesmo assim: a repetição usa a MESMA
+ * chave e o MESMO corpo, e o servidor devolve o que já gravou em vez de
+ * duplicar. Recusa da Evolfy (resposta HTTP) nunca é repetida.
+ */
+async function writeCard(projectRoot, path, body) {
+  const { identity, connection } = localConnection(projectRoot);
+  const checkpoint = gitCheckpoint(identity);
+  sequence += 1;
+  const idempotencyKey = `mcp:${SESSION_HASH.slice(7, 23)}:${String(sequence).padStart(6, "0")}`;
+  const payload = JSON.stringify({
+    chaveIdempotencia: idempotencyKey,
+    sessaoHash: SESSION_HASH,
+    ...body,
+    branch: checkpoint.branch,
+    commitRef: checkpoint.commitRef,
+    ocorridoEm: new Date().toISOString(),
+  });
+  const request = () =>
+    api(path, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${connection.token}` },
+      body: payload,
+    });
+  try {
+    return await request();
+  } catch (caught) {
+    if (caught instanceof SafeError) throw caught;
+    return request();
+  }
+}
+
 async function callTool(name, args) {
   if (!args || typeof args !== "object" || Array.isArray(args)) {
     throw new SafeError("Parâmetros da ferramenta inválidos.");
@@ -279,6 +379,42 @@ async function callTool(name, args) {
     return api("/agent-sync/v1/context", {
       headers: { Authorization: `Bearer ${connection.token}` },
     });
+  }
+  if (name === "evolfy_create_card") {
+    const title = typeof args.title === "string" ? args.title.trim() : "";
+    if (title.length < 1 || title.length > 200) {
+      throw new SafeError("Informe um título de 1 a 200 caracteres.");
+    }
+    const columnId = requireUuid(args.columnId, "Coluna inválida.");
+    const result = await writeCard(args.projectRoot, "/agent-sync/v1/cards", {
+      colunaId: columnId,
+      titulo: title,
+    });
+    return {
+      created: result?.existing !== true && result?.event?.replayed !== true,
+      reusedExisting: result?.existing === true,
+      card: result?.card ?? null,
+      publishedToClient: false,
+    };
+  }
+  if (name === "evolfy_move_card") {
+    const cardId = requireUuid(args.cardId, "Card inválido.");
+    const fromColumnId = requireUuid(args.fromColumnId, "Coluna de origem inválida.");
+    const toColumnId = requireUuid(args.toColumnId, "Coluna de destino inválida.");
+    if (fromColumnId === toColumnId) {
+      throw new SafeError("A coluna de destino precisa ser diferente da de origem.");
+    }
+    const result = await writeCard(
+      args.projectRoot,
+      `/agent-sync/v1/cards/${cardId}/move`,
+      { colunaOrigemId: fromColumnId, colunaDestinoId: toColumnId },
+    );
+    return {
+      moved: true,
+      replayed: result?.event?.replayed === true,
+      card: result?.card ?? null,
+      publishedToClient: false,
+    };
   }
   if (name === "evolfy_report_progress") {
     return report(
@@ -374,9 +510,9 @@ async function receive(message) {
     result(message.id, {
       protocolVersion: message.params?.protocolVersion ?? "2025-11-25",
       capabilities: { tools: { listChanged: false } },
-      serverInfo: { name: "evolfy-board-sync", version: "0.1.0" },
+      serverInfo: { name: "evolfy-board-sync", version: "0.2.0" },
       instructions:
-        "Conecte por código EVF e envie apenas resumos operacionais seguros. Nunca envie código, diff, arquivo, comando, output, e-mail, URL ou segredo.",
+        "Conecte por código EVF e envie apenas resumos operacionais seguros. Nunca envie código, diff, arquivo, comando, output, e-mail, URL ou segredo. Crie e mova cards só nas colunas com agentAllowed=true; publicar para o cliente é sempre humano.",
     });
     return;
   }

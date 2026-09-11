@@ -1,6 +1,6 @@
 ---
 name: evolfy-board-sync
-description: Conecta o projeto atual a um Board Evolfy por código de pareamento e registra progresso, testes, bloqueios e conclusão enquanto a sessão trabalha. Use quando o usuário pedir para conectar, sincronizar, alimentar ou atualizar um Board Evolfy a partir do Codex ou Claude Code, ou fornecer um código EVF de conexão.
+description: Conecta o projeto atual a um Board Evolfy por código de pareamento, registra progresso, testes, bloqueios e conclusão enquanto a sessão trabalha e, quando permitido, cria e move cards nas colunas liberadas. Use quando o usuário pedir para conectar, sincronizar, alimentar, organizar ou atualizar um Board Evolfy a partir do Codex ou Claude Code, ou fornecer um código EVF de conexão.
 ---
 
 # Evolfy Board Sync
@@ -50,8 +50,42 @@ Sintetize localmente resultados técnicos. Exemplo seguro: “Validação conclu
 reescreva-o de forma mais abstrata; preserve a mesma chave de idempotência apenas
 quando o conteúdo for idêntico.
 
-Nenhuma ferramenta move cards ou publica no portal do cliente. Esses controles
-continuam humanos e separados.
+Nenhuma ferramenta publica no portal do cliente. Esse controle continua humano e
+separado.
+
+## Organizar cards
+
+Quando o código de conexão incluiu as permissões **Criar cards** e **Mover
+cards**, o agente mantém o Board alinhado ao trabalho. As regras abaixo são
+garantidas pelo servidor; siga-as para não gastar chamadas com recusas.
+
+- Consulte `evolfy_get_board` antes. Crie e mova somente em colunas com
+  `agentAllowed: true`. Coluna com `closesCards: true` e colunas não liberadas
+  são sempre humanas.
+- Um card por entrega ou frente de trabalho, nunca por commit, arquivo ou
+  tarefa interna. Antes de criar, procure em `cards` um card aberto sobre o
+  mesmo assunto e prefira reutilizá-lo. Mesmo título (ignorando maiúsculas e
+  espaços) devolve o card existente em vez de criar outro.
+- Título curto em linguagem de produto, até 200 caracteres, como “Checkout com
+  Pix”. Nunca código, caminho, comando, URL, e-mail ou segredo.
+- Mova quando o estado real mudar: ao começar a implementar, para a coluna de
+  desenvolvimento; quando os testes passarem, para a coluna de testes internos.
+  Informe sempre a coluna atual do card em `fromColumnId`, lida no
+  `evolfy_get_board` mais recente.
+- Card com `publishedToClient: true` ou concluído fica com pessoas. Não tente
+  movê-lo.
+- Depois de criar um card, use o `cardId` dele nos `evolfy_report_*` daquela
+  entrega.
+
+Como reagir às recusas:
+
+- “O card mudou de coluna”: alguém mexeu antes. Leia o Board de novo e não
+  insista no movimento.
+- “Esta conexão não tem permissão”: diga ao usuário que é preciso gerar um
+  código novo com a permissão. Não repita a chamada.
+- “Esta coluna não está liberada”: use outra coluna liberada ou avise o usuário.
+- “A cota diária de cards desta conexão acabou”: pare de criar cards e siga só
+  com os relatórios.
 
 ## Encerrar
 

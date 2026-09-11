@@ -1,7 +1,7 @@
 {
   "name": "evolfy-board-sync",
   "description": "Conecta uma sessão Claude Code a um Board Evolfy com pareamento de uso único e feed operacional seguro.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "author": {
     "name": "Evolfy",
     "url": "https://evolfy.com.br"

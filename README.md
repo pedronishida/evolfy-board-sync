@@ -12,6 +12,11 @@ bloqueios e conclusão no feed interno do Board. Quando um `cardId` válido é
 informado, o resumo também entra como comentário interno daquele card. Nada é
 publicado automaticamente no portal do cliente.
 
+A partir da versão 0.2.0, se a pessoa que gerou o código marcar **Criar cards**
+e **Mover cards**, o agente também cria cards e os move entre as colunas que o
+Board liberou para ele. Coluna que conclui, card publicado para o cliente e card
+concluído continuam sendo só de pessoas.
+
 ## Instalar no Codex
 
 ```sh
@@ -42,7 +47,9 @@ Recarregue os plugins quando solicitado e use
   `cardId` opcional;
 - prompt, transcript, código, diff, arquivo, comando, output, e-mail, URL,
   variável de ambiente e segredo são proibidos;
-- não existe ferramenta para mover cards ou publicar no portal do cliente.
+- criar e mover cards exige permissão explícita no código de pareamento e vale
+  só nas colunas liberadas no Board; o servidor recusa o resto;
+- não existe ferramenta para publicar no portal do cliente.
 
 O sincronismo é próximo de tempo real enquanto a sessão do agente está ativa.
 Para acompanhamento contínuo 24 horas por dia, use também o GitHub App do
